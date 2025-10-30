@@ -6,8 +6,10 @@ Project Structure
 
 text
 lego_robotics/
+
 ├── src/
 │   ├── exoskeleton/
+
 │   │   ├── __init__.py
 │   │   ├── exoskeleton_controller.py  # Main motor control logic
 │   │   └── therapy_session.py         # Therapy protocols and session management
