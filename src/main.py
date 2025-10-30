@@ -1,82 +1,92 @@
 # src/main.py
 import sys
 import os
+import time
 
-# Add the BrickPi3 library to path
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'BrickPi3', 'Software', 'Python'))
+# Add the current directory and parent directory to Python path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, current_dir)
+sys.path.insert(0, parent_dir)
+
+# Add BrickPi3 to path
+brickpi_path = os.path.join(parent_dir, 'BrickPi3', 'Software', 'Python')
+if os.path.exists(brickpi_path):
+    sys.path.insert(0, brickpi_path)
 
 try:
     import brickpi3
     HARDWARE_AVAILABLE = True
-    print("✓ BrickPi3 hardware detected")
+    print("✓ BrickPi3 hardware detected - REAL MODE")
 except ImportError as e:
-    print(f"✗ BrickPi3 library not found: {e}")
     HARDWARE_AVAILABLE = False
-except Exception as e:
-    print(f"✗ Hardware error: {e}")
-    HARDWARE_AVAILABLE = False
+    print(f"⚠ BrickPi3 not available - SIMULATION MODE: {e}")
 
-class Robot:
-    def __init__(self):
-        if HARDWARE_AVAILABLE:
-            try:
-                self.bp = brickpi3.BrickPi3()
-                self.hardware_connected = True
-                print("✓ BrickPi3 initialized successfully")
-            except Exception as e:
-                print(f"⚠ BrickPi3 hardware not connected: {e}")
-                self.hardware_connected = False
-                self._create_mock_bp()
-        else:
-            self.hardware_connected = False
-            self._create_mock_bp()
-    
-    def _create_mock_bp(self):
-        """Create a mock BrickPi3 instance for development"""
-        print("⚠ Using MockBrickPi3 for development")
-        from utils.mock_brickpi import MockBrickPi3
-        self.bp = MockBrickPi3()
-    
-    def setup_motors(self):
-        """Configure motor ports"""
-        self.MOTOR_LEFT = self.bp.MOTOR_A
-        self.MOTOR_RIGHT = self.bp.MOTOR_B
-        self.MOTOR_ARM = self.bp.MOTOR_C
-        self.MOTOR_GRIPPER = self.bp.MOTOR_D
-        
-        print("✓ Motors configured")
-    
-    def move_forward(self, power=50, duration=2):
-        """Move forward for specified duration"""
-        print(f"Moving forward: power={power}, duration={duration}s")
-        self.bp.set_motor_power(self.MOTOR_LEFT, power)
-        self.bp.set_motor_power(self.MOTOR_RIGHT, power)
-        
-        # In real hardware, you'd use time.sleep(duration)
-        # For mock, we just log the action
-    
-    def stop(self):
-        """Stop all motors"""
-        print("Stopping all motors")
-        self.bp.set_motor_power(self.MOTOR_LEFT, 0)
-        self.bp.set_motor_power(self.MOTOR_RIGHT, 0)
-    
-    def cleanup(self):
-        """Clean up resources"""
-        if self.hardware_connected:
-            self.bp.reset_all()
-        print("✓ Cleanup completed")
+# Now import our custom modules
+try:
+    from exoskeleton.exoskeleton_controller import ExoskeletonController
+    from exoskeleton.therapy_session import TherapySession
+    print("✓ Exoskeleton modules imported successfully")
+except ImportError as e:
+    print(f"✗ Error importing exoskeleton modules: {e}")
+    print("Current Python path:")
+    for path in sys.path:
+        print(f"  {path}")
+    sys.exit(1)
 
-if __name__ == "__main__":
-    robot = Robot()
-    robot.setup_motors()
+def main():
+    # Initialize hardware or mock
+    if HARDWARE_AVAILABLE:
+        try:
+            bp = brickpi3.BrickPi3()
+            print("✓ Connected to real BrickPi3 hardware")
+        except Exception as e:
+            from utils.exoskeleton_mock import ExoskeletonMockBrickPi3
+            bp = ExoskeletonMockBrickPi3()
+            print(f"⚠ Using exoskeleton simulation mode: {e}")
+    else:
+        from utils.exoskeleton_mock import ExoskeletonMockBrickPi3
+        bp = ExoskeletonMockBrickPi3()
+        print("✓ Running in exoskeleton simulation mode")
+    
+    # Initialize exoskeleton controller
+    exo = ExoskeletonController(bp)
+    therapy = TherapySession(exo)
     
     try:
-        # Test movements
-        robot.move_forward(power=50, duration=2)
-        robot.stop()
+        # Test individual movements
+        print("\n1. Testing individual joint movements:")
+        exo.move_elbow(45)
+        exo.move_wrist(30)
+        time.sleep(1)
+        
+        exo.move_elbow(90)
+        exo.move_wrist(-30)
+        time.sleep(1)
+        
+        # Run therapy sessions
+        print("\n2. Running therapy sessions:")
+        therapy.run_standard_session("beginner")
+        
+        print("\n3. Session summary:")
+        history = therapy.get_session_history()
+        for i, session in enumerate(history):
+            print(f"Session {i+1}: {session['patient_level']} level, {session['duration']:.1f}s")
+        
+        # Return to neutral
+        print("\n4. Returning to neutral position:")
+        exo.reset_position()
         
     except KeyboardInterrupt:
-        print("\nProgram interrupted by user")
+        print("\n\nTherapy session interrupted by user")
     finally:
-        robot.cleanup()
+        # Safety cleanup
+        if HARDWARE_AVAILABLE:
+            try:
+                bp.reset_all()
+            except:
+                pass
+        print("✓ Exoskeleton system shutdown complete")
+
+if __name__ == "__main__":
+    main()
