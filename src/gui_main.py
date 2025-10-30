@@ -8,44 +8,27 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.insert(0, current_dir)
 sys.path.insert(0, parent_dir)
 
-# Add BrickPi3 to path
-brickpi_path = os.path.join(parent_dir, 'BrickPi3', 'Software', 'Python')
-if os.path.exists(brickpi_path):
-    sys.path.insert(0, brickpi_path)
-
-try:
-    import brickpi3
-    HARDWARE_AVAILABLE = True
-    print("BrickPi3 hardware detected - REAL MODE")
-except ImportError as e:
-    HARDWARE_AVAILABLE = False
-    print(f"BrickPi3 not available - SIMULATION MODE: {e}")
-
-from exoskeleton.exoskeleton_controller import ExoskeletonController
-from gui.exoskeleton_gui import ExoskeletonGUI
+from src.utils.advanced_mock import AdvancedBrickPi3Mock
+from src.exoskeleton.exoskeleton_controller import ExoskeletonController
 
 def main():
-    # Initialize hardware or mock
-    if HARDWARE_AVAILABLE:
-        try:
-            bp = brickpi3.BrickPi3()
-            print("Connected to real BrickPi3 hardware")
-        except Exception as e:
-            from utils.exoskeleton_mock import ExoskeletonMockBrickPi3
-            bp = ExoskeletonMockBrickPi3()
-            print(f"Using exoskeleton simulation mode: {e}")
-    else:
-        from utils.exoskeleton_mock import ExoskeletonMockBrickPi3
-        bp = ExoskeletonMockBrickPi3()
-        print("Running in exoskeleton simulation mode")
+    # Initialize with advanced mock (no hardware required)
+    bp = AdvancedBrickPi3Mock()
     
     # Initialize exoskeleton controller
     exo = ExoskeletonController(bp)
     
     # Start GUI
-    print("Starting Exoskeleton GUI...")
-    gui = ExoskeletonGUI(exo)
-    gui.run()
+    try:
+        from src.gui.simple_gui import SimpleExoskeletonGUI
+        print("Starting Exoskeleton GUI...")
+        gui = SimpleExoskeletonGUI(exo)
+        gui.run()
+    except ImportError as e:
+        print(f"GUI not available: {e}")
+        print("Make sure Tkinter is installed")
+    except Exception as e:
+        print(f"Error starting GUI: {e}")
 
 if __name__ == "__main__":
     main()
