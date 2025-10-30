@@ -88,5 +88,29 @@ def main():
                 pass
         print("✓ Exoskeleton system shutdown complete")
 
+# src/main.py (add this at the end of the file)
+def main_with_gui():
+    """Run the application with GUI"""
+    try:
+        from gui.exoskeleton_gui import ExoskeletonGUI
+        from utils.exoskeleton_mock import ExoskeletonMockBrickPi3
+        
+        bp = ExoskeletonMockBrickPi3()
+        exo = ExoskeletonController(bp)
+        
+        print("Starting Exoskeleton GUI...")
+        gui = ExoskeletonGUI(exo)
+        gui.run()
+        
+    except ImportError as e:
+        print(f"GUI not available: {e}")
+        print("Falling back to console mode...")
+        main_console()
+
 if __name__ == "__main__":
-    main()
+    # Check if GUI is requested
+    import sys
+    if len(sys.argv) > 1 and sys.argv[1] == "--gui":
+        main_with_gui()
+    else:
+        main_console()  # You'll need to rename your existing main() to main_console()

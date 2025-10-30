@@ -1,3 +1,5 @@
 brickpi3
 RPi.GPIO
 spidev
+matplotlib
+numpy
