@@ -11,19 +11,33 @@ lego_robotics/
 │   ├── exoskeleton/
 
 │   │   ├── __init__.py
+
 │   │   ├── exoskeleton_controller.py  # Main motor control logic
+
 │   │   └── therapy_session.py         # Therapy protocols and session management
+
 │   ├── utils/
+
 │   │   ├── __init__.py
+
 │   │   └── exoskeleton_mock.py        # Mock hardware for development
+
 │   ├── motors/                        # Low-level motor control
+
 │   ├── sensors/                       # Sensor integration
+
 │   └── main.py                        # Entry point
+
 ├── tests/                             # Test scripts
+
 ├── docs/                              # Documentation
+
 ├── BrickPi3/                          # BrickPi3 library
+
 ├── requirements.txt
+
 └── README.md
+
 Exoskeleton Specifications
 
 3 DOF Upper Limb Rehabilitation:
