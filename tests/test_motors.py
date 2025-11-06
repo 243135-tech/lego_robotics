@@ -1,3 +1,4 @@
+'''
 # test_single_motor.py
 import sys
 import os
@@ -76,3 +77,17 @@ def test_single_motor():
 
 if __name__ == "__main__":
     test_single_motor()
+
+    '''
+
+import time, brickpi3 as BP
+bp = BP.BrickPi3()
+try:
+    print("Battery:", bp.get_voltage_battery(), "V")
+    bp.set_motor_power(bp.PORT_C, 50)  # run forward
+    time.sleep(2)
+    bp.set_motor_power(bp.PORT_C, -50) # run reverse
+    time.sleep(2)
+    bp.set_motor_power(bp.PORT_C, 0)   # coast/stop
+finally:
+    bp.reset_all()
