@@ -1,33 +1,78 @@
-# tests/test_motors.py
+# test_single_motor.py
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import time
 
-from src.main import Robot
+# Add BrickPi3 to path
+sys.path.append('/home/pi/lego_robotics/BrickPi3/Software/Python')
 
-def test_basic_movements():
-    """Test basic robot movements"""
-    robot = Robot()
-    robot.setup_motors()
+try:
+    import brickpi3
+except ImportError as e:
+    print(f"BrickPi3 not available: {e}")
+    sys.exit(1)
+
+def test_single_motor():
+    bp = brickpi3.BrickPi3()
     
-    print("Testing basic movements...")
+    print("SINGLE MOTOR TEST")
+    print("=" * 40)
+    print("Make sure the motor is free to move!")
+    print("The motor will:")
+    print("1. Rotate FORWARD for 2 seconds")
+    print("2. Stop for 1 second") 
+    print("3. Rotate BACKWARD for 2 seconds")
+    print("4. Stop completely")
+    print("=" * 40)
     
-    # Test sequence
-    movements = [
-        ("Forward", lambda: robot.move_forward(50, 1)),
-        ("Stop", robot.stop),
-        ("Backward", lambda: robot.move_forward(-50, 1)),
-        ("Stop", robot.stop),
-        ("Left turn", lambda: robot.bp.set_motor_power(robot.MOTOR_LEFT, -30)),
-        ("Right turn", lambda: robot.bp.set_motor_power(robot.MOTOR_RIGHT, -30)),
-    ]
+    # Ask which port the motor is connected to
+    port = input("Which port is the motor connected to? (A, B, C, or D): ").upper().strip()
     
-    for name, movement in movements:
-        print(f"Testing: {name}")
-        movement()
+    port_map = {
+        'A': bp.MOTOR_A,
+        'B': bp.MOTOR_B, 
+        'C': bp.MOTOR_C,
+        'D': bp.MOTOR_D
+    }
     
-    robot.cleanup()
-    print("✓ All tests completed")
+    if port not in port_map:
+        print("Invalid port! Please use A, B, C, or D")
+        return
+    
+    motor_port = port_map[port]
+    
+    try:
+        input("Press Enter to start the test...")
+        
+        # Test 1: Forward rotation
+        print(f"\n🔄 Testing FORWARD rotation on Port {port}...")
+        bp.set_motor_power(motor_port, 50)  # 50% power forward
+        time.sleep(2)
+        
+        # Stop briefly
+        print("⏹️  Stopping...")
+        bp.set_motor_power(motor_port, 0)
+        time.sleep(1)
+        
+        # Test 2: Backward rotation  
+        print(f"🔄 Testing BACKWARD rotation on Port {port}...")
+        bp.set_motor_power(motor_port, -50)  # 50% power backward
+        time.sleep(2)
+        
+        # Final stop
+        print("⏹️  Test complete - stopping motor")
+        bp.set_motor_power(motor_port, 0)
+        
+        print("✓ Motor test completed successfully!")
+        
+    except KeyboardInterrupt:
+        print("\n⚠ Test interrupted by user")
+    except Exception as e:
+        print(f"❌ Motor error: {e}")
+    finally:
+        # Always ensure motor stops
+        bp.set_motor_power(motor_port, 0)
+        print("✓ Motor safely stopped")
 
 if __name__ == "__main__":
-    test_basic_movements()
+    test_single_motor()
