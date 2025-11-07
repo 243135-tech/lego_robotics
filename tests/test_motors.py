@@ -84,10 +84,16 @@ import time, brickpi3 as BP
 bp = BP.BrickPi3()
 try:
     print("Battery:", bp.get_voltage_battery(), "V")
-    bp.set_motor_power(bp.PORT_C, 50)  # run forward
+    bp.set_motor_power(bp.PORT_C, 40)  # run forward
+    bp.set_motor_power(bp.PORT_B, 40)
+    time.sleep(1)
+    bp.set_motor_power(bp.PORT_C, 5)   # coast/stop
+    bp.set_motor_power(bp.PORT_B, 5)
     time.sleep(2)
-    bp.set_motor_power(bp.PORT_C, -50) # run reverse
-    time.sleep(2)
+    bp.set_motor_power(bp.PORT_C, -30)  # run forward
+    bp.set_motor_power(bp.PORT_B, -30)
+    time.sleep(1.2)
     bp.set_motor_power(bp.PORT_C, 0)   # coast/stop
+    bp.set_motor_power(bp.PORT_B, 0)
 finally:
     bp.reset_all()
