@@ -157,9 +157,9 @@ def run_phase(bp, label, duty, duration, ramp, hold_power=0, hold_time=0.0):
 
 def main():
     ap = argparse.ArgumentParser(description="Elbow flex/extend in power mode (B and C same direction) with midrest and smoothness metrics")
-    ap.add_argument("--power", type=int, default=40, help="duty %% magnitude for flex/extend (0..100)")
-    ap.add_argument("--tflex", type=float, default=1.6, help="flex duration (s)")
-    ap.add_argument("--textend", type=float, default=0.5, help="extend duration (s)")
+    ap.add_argument("--power", type=int, default=100, help="duty %% magnitude for flex/extend (0..100)")
+    ap.add_argument("--tflex", type=float, default=2.2, help="flex duration (s)")
+    ap.add_argument("--textend", type=float, default=0.8, help="extend duration (s)")
     ap.add_argument("--reps", type=int, default=3, help="number of repetitions")
     ap.add_argument("--rest", type=float, default=1.0, help="rest between repetitions (s)")
     ap.add_argument("--midrest", type=float, default=1, help="rest between FLEX and EXTEND (s)")
@@ -204,6 +204,21 @@ def main():
         for i in range(1, reps + 1):
             print(f"\nRep {i}/{reps}")
 
+            # EXTEND
+            _, _, m_ext = run_phase(bp,
+                                    label="EXTEND",
+                                    duty=s_ext * duty,
+                                    duration=textend,
+                                    ramp=ramp,
+                                    hold_power=hold_power,
+                                    hold_time=hold_time)
+            scores.append(m_ext["smoothness_score"])
+
+            # Mid-rest between phases
+            if midrest > 0:
+                print(f"Mid-rest {midrest:.2f}s")
+                time.sleep(midrest)
+
             # FLEX
             _, _, m_flex = run_phase(bp,
                                      label="FLEX",
@@ -214,20 +229,6 @@ def main():
                                      hold_time=hold_time)
             scores.append(m_flex["smoothness_score"])
 
-            # Mid-rest between phases
-            if midrest > 0:
-                print(f"Mid-rest {midrest:.2f}s")
-                time.sleep(midrest)
-
-            # EXTEND
-            _, _, m_ext = run_phase(bp,
-                                    label="EXTEND",
-                                    duty=s_ext * duty,
-                                    duration=textend,
-                                    ramp=ramp,
-                                    hold_power=hold_power,
-                                    hold_time=hold_time)
-            scores.append(m_ext["smoothness_score"])
 
             if i < reps and rest > 0:
                 print(f"Rest {rest:.2f}s")
