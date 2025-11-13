@@ -1,6 +1,6 @@
 LEGO Exoskeleton for Upper Limb Rehabilitation
 
-A Raspberry Pi-based control system for a 3 DOF (Degree of Freedom) LEGO exoskeleton designed for upper limb rehabilitation therapy. This project uses BrickPi3 to control LEGO motors for elbow flexion/extension and wrist rotation movements.
+A Raspberry Pi-based control system for a 2 DOF (Degree of Freedom) LEGO exoskeleton designed for upper limb rehabilitation therapy. This project uses BrickPi3 to control LEGO motors for elbow flexion/extension and wrist rotation movements.
 
 Project Structure
 
@@ -40,7 +40,7 @@ lego_robotics/
 
 Exoskeleton Specifications
 
-3 DOF Upper Limb Rehabilitation:
+2 DOF Upper Limb Rehabilitation:
 
 Motor A: Elbow Flexion/Extension (Primary)
 Motor B: Elbow Flexion/Extension (Secondary - torque support)
